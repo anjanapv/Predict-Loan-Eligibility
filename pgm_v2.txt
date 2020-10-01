@@ -1,0 +1,324 @@
++-------+------------+-----------------+------------------+-------------+-----------+
+|summary|   Education|  ApplicantIncome| CoapplicantIncome|Property_Area|Loan_Status|
++-------+------------+-----------------+------------------+-------------+-----------+
+|  count|         614|              614|               614|          614|        614|
+|   mean|        null|5403.459283387622| 1621.245798027101|         null|       null|
+| stddev|        null|6109.041673387181|2926.2483692241894|         null|       null|
+|    min|    Graduate|              150|               0.0|        Rural|          N|
+|    max|Not Graduate|            81000|           41667.0|        Urban|          Y|
++-------+------------+-----------------+------------------+-------------+-----------+
+
+Loan_ID : 0
+Gender : 13
+Married : 3
+Dependents : 15
+Education : 0
+Self_Employed : 32
+ApplicantIncome : 0
+CoapplicantIncome : 0
+LoanAmount : 22
+Loan_Amount_Term : 14
+Credit_History : 50
+Property_Area : 0
+Loan_Status : 0
+
+>>> df3.select("Education").distinct().show()
++------------+
+|   Education|
++------------+
+|Not Graduate|
+|    Graduate|
++------------+
+
+>>> df3.select("Property_Area").distinct().show()
++-------------+
+|Property_Area|
++-------------+
+|        Urban|
+|    Semiurban|
+|        Rural|
++-------------+
+
+>>> df3.select("Loan_Status").distinct().show()
++-----------+
+|Loan_Status|
++-----------+
+|          Y|
+|          N|
++-----------+
+#--------------------------------------------------#--------------------------------------------------
+from pyspark.sql.functions import col,sum,avg,max,min,when,trim
+from sklearn.linear_model import LogisticRegression
+from pyspark.sql.functions import lit
+from sklearn import metrics
+
+df1=spark.read.option("header",True).option("inferSchema",True).csv("C:/Users/anjan/Documents/Big data/hackerthon/loan prediction/train_ctrUa4K.csv")
+
+df2=df1.select("Education","ApplicantIncome","CoapplicantIncome","Property_Area","Loan_Status")
+
+df3 = df2 \
+.withColumn("Education", when(col("Education")=="Not Graduate",0).when(col("Education")=="Graduate",1)) \
+.withColumn("ApplicantIncome", \
+when((col("ApplicantIncome")>=0) & (col("ApplicantIncome")<2500),lit(0)) \
+.when((col("ApplicantIncome")>=2500) & (col("ApplicantIncome")<5000),lit(1)) \
+.when((col("ApplicantIncome")>=5000) & (col("ApplicantIncome")<7500),lit(2)) \
+.when((col("ApplicantIncome")>=7500) & (col("ApplicantIncome")<10000),lit(3)) \
+.when((col("ApplicantIncome")>=10000) & (col("ApplicantIncome")<12500),lit(4)) \
+.when((col("ApplicantIncome")>=12500) & (col("ApplicantIncome")<15000),lit(5)) \
+.when((col("ApplicantIncome")>=15000) & (col("ApplicantIncome")<17500),lit(6)) \
+.when((col("ApplicantIncome")>=17500) & (col("ApplicantIncome")<20000),lit(7)) \
+.when((col("ApplicantIncome")>=20000) & (col("ApplicantIncome")<22500),lit(8)) \
+.when((col("ApplicantIncome")>=22500) & (col("ApplicantIncome")<25000),lit(9)) \
+.when((col("ApplicantIncome")>=25000) & (col("ApplicantIncome")<27500),lit(10)) \
+.when((col("ApplicantIncome")>=27500) & (col("ApplicantIncome")<30000),lit(11)) \
+.when((col("ApplicantIncome")>=30000) & (col("ApplicantIncome")<32500),lit(12)) \
+.when((col("ApplicantIncome")>=32500) & (col("ApplicantIncome")<35000),lit(13)) \
+.when((col("ApplicantIncome")>=35000) & (col("ApplicantIncome")<37500),lit(14)) \
+.when((col("ApplicantIncome")>=37500) & (col("ApplicantIncome")<40000),lit(15)) \
+.when((col("ApplicantIncome")>=40000) & (col("ApplicantIncome")<42500),lit(16)) \
+.when((col("ApplicantIncome")>=42500) & (col("ApplicantIncome")<45000),lit(17)) \
+.when((col("ApplicantIncome")>=45000) & (col("ApplicantIncome")<47500),lit(18)) \
+.when((col("ApplicantIncome")>=47500) & (col("ApplicantIncome")<50000),lit(19)) \
+.when((col("ApplicantIncome")>=50000) & (col("ApplicantIncome")<52500),lit(20)) \
+.when((col("ApplicantIncome")>=52500) & (col("ApplicantIncome")<55000),lit(21)) \
+.when((col("ApplicantIncome")>=55000) & (col("ApplicantIncome")<57500),lit(22)) \
+.when((col("ApplicantIncome")>=57500) & (col("ApplicantIncome")<60000),lit(23)) \
+.when((col("ApplicantIncome")>=60000) & (col("ApplicantIncome")<62500),lit(24)) \
+.when((col("ApplicantIncome")>=62500) & (col("ApplicantIncome")<65000),lit(25)) \
+.when((col("ApplicantIncome")>=65000) & (col("ApplicantIncome")<67500),lit(26)) \
+.when((col("ApplicantIncome")>=67500) & (col("ApplicantIncome")<70000),lit(27)) \
+.when((col("ApplicantIncome")>=70000) & (col("ApplicantIncome")<72500),lit(28)) \
+.when((col("ApplicantIncome")>=72500) & (col("ApplicantIncome")<75000),lit(29)) \
+.when((col("ApplicantIncome")>=75000) & (col("ApplicantIncome")<77500),lit(30)) \
+.when((col("ApplicantIncome")>=77500) & (col("ApplicantIncome")<80000),lit(31)) \
+.when((col("ApplicantIncome")>=80000) & (col("ApplicantIncome")<82500),lit(32))) \
+.withColumn("CoapplicantIncome", \
+when((col("CoapplicantIncome")>=0) & (col("CoapplicantIncome")<1250),lit(0)) \
+.when((col("CoapplicantIncome")>=1250) & (col("CoapplicantIncome")<2500),lit(1)) \
+.when((col("CoapplicantIncome")>=2500) & (col("CoapplicantIncome")<3750),lit(2)) \
+.when((col("CoapplicantIncome")>=3750) & (col("CoapplicantIncome")<5000),lit(3)) \
+.when((col("CoapplicantIncome")>=5000) & (col("CoapplicantIncome")<6250),lit(4)) \
+.when((col("CoapplicantIncome")>=6250) & (col("CoapplicantIncome")<7500),lit(5)) \
+.when((col("CoapplicantIncome")>=7500) & (col("CoapplicantIncome")<8750),lit(6)) \
+.when((col("CoapplicantIncome")>=8750) & (col("CoapplicantIncome")<10000),lit(7)) \
+.when((col("CoapplicantIncome")>=10000) & (col("CoapplicantIncome")<11250),lit(8)) \
+.when((col("CoapplicantIncome")>=11250) & (col("CoapplicantIncome")<12500),lit(9)) \
+.when((col("CoapplicantIncome")>=12500) & (col("CoapplicantIncome")<13750),lit(10)) \
+.when((col("CoapplicantIncome")>=13750) & (col("CoapplicantIncome")<15000),lit(11)) \
+.when((col("CoapplicantIncome")>=15000) & (col("CoapplicantIncome")<16250),lit(12)) \
+.when((col("CoapplicantIncome")>=16250) & (col("CoapplicantIncome")<17500),lit(13)) \
+.when((col("CoapplicantIncome")>=17500) & (col("CoapplicantIncome")<18750),lit(14)) \
+.when((col("CoapplicantIncome")>=18750) & (col("CoapplicantIncome")<20000),lit(15)) \
+.when((col("CoapplicantIncome")>=20000) & (col("CoapplicantIncome")<21250),lit(16)) \
+.when((col("CoapplicantIncome")>=21250) & (col("CoapplicantIncome")<22500),lit(17)) \
+.when((col("CoapplicantIncome")>=22500) & (col("CoapplicantIncome")<23750),lit(18)) \
+.when((col("CoapplicantIncome")>=23750) & (col("CoapplicantIncome")<25000),lit(19)) \
+.when((col("CoapplicantIncome")>=25000) & (col("CoapplicantIncome")<26250),lit(20)) \
+.when((col("CoapplicantIncome")>=26250) & (col("CoapplicantIncome")<27500),lit(21)) \
+.when((col("CoapplicantIncome")>=27500) & (col("CoapplicantIncome")<28750),lit(22)) \
+.when((col("CoapplicantIncome")>=28750) & (col("CoapplicantIncome")<30000),lit(23)) \
+.when((col("CoapplicantIncome")>=30000) & (col("CoapplicantIncome")<31250),lit(24)) \
+.when((col("CoapplicantIncome")>=31250) & (col("CoapplicantIncome")<32500),lit(25)) \
+.when((col("CoapplicantIncome")>=32500) & (col("CoapplicantIncome")<33750),lit(26)) \
+.when((col("CoapplicantIncome")>=33750) & (col("CoapplicantIncome")<35000),lit(27)) \
+.when((col("CoapplicantIncome")>=35000) & (col("CoapplicantIncome")<36250),lit(28)) \
+.when((col("CoapplicantIncome")>=36250) & (col("CoapplicantIncome")<37500),lit(29)) \
+.when((col("CoapplicantIncome")>=37500) & (col("CoapplicantIncome")<38750),lit(30)) \
+.when((col("CoapplicantIncome")>=38750) & (col("CoapplicantIncome")<40000),lit(31)) \
+.when((col("CoapplicantIncome")>=40000) & (col("CoapplicantIncome")<41250),lit(32)) \
+.when((col("CoapplicantIncome")>=41250) & (col("CoapplicantIncome")<42500),lit(33))) \
+.withColumn("Property_Area", when(col("Property_Area")=="Urban",0).when(col("Property_Area")=="Semiurban",1).when(col("Property_Area")=="Rural",2)) \
+.withColumn("Loan_Status", when(col("Loan_Status")=="Y",0).when(col("Loan_Status")=="N",1))
+
+#--------------------------------------------------#--------------------------------------------------
+
+df_x=df3.select("Education","ApplicantIncome","CoapplicantIncome","Property_Area").toPandas()
+df_y=df3.select("Loan_Status").toPandas()
+
+#print('Result is =',reg.predict([[1,0]]))
+
+reg = LogisticRegression()
+reg.fit(df_x, df_y)
+
+y_pred = reg.predict(df_x)
+print("Accuracy:",metrics.accuracy_score(df_y, y_pred))
+
+#y_pred = reg.predict(x_test)
+#print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+
+#--------------------------------------------------#--------------------------------------------------
+reg.predict([[0,0,1,2]])
+reg.predict([[1,6,1,1]])
+reg.predict([[1,0,0,0]])
+reg.predict([[1,2,1,2]])
+reg.predict([[1,2,0,2]])
+reg.predict([[0,1,0,0]])
+reg.predict([[1,1,1,0]])
+reg.predict([[0,1,1,1]])
+reg.predict([[1,1,3,2]])
+reg.predict([[1,6,0,0]])
+reg.predict([[1,9,0,2]])
+reg.predict([[1,5,2,2]])
+reg.predict([[1,2,1,1]])
+reg.predict([[0,6,0,1]])
+reg.predict([[1,0,1,1]])
+reg.predict([[1,0,2,1]])
+reg.predict([[0,1,0,1]])
+reg.predict([[1,2,1,1]])
+reg.predict([[1,1,1,2]])
+reg.predict([[0,2,0,1]])
+reg.predict([[0,0,2,1]])
+reg.predict([[1,2,2,2]])
+reg.predict([[0,1,2,1]])
+reg.predict([[1,1,0,2]])
+reg.predict([[1,7,0,1]])
+reg.predict([[1,2,3,0]])
+reg.predict([[1,0,4,2]])
+reg.predict([[1,0,4,2]])
+reg.predict([[1,1,5,0]])
+reg.predict([[1,3,5,2]])
+reg.predict([[1,4,0,1]])
+reg.predict([[0,0,1,1]])
+reg.predict([[1,2,5,0]])
+reg.predict([[1,0,1,0]])
+reg.predict([[0,0,0,2]])
+reg.predict([[1,2,1,0]])
+reg.predict([[0,7,0,0]])
+reg.predict([[1,4,0,1]])
+reg.predict([[1,8,5,0]])
+reg.predict([[0,0,0,0]])
+reg.predict([[1,0,0,1]])
+reg.predict([[0,1,0,0]])
+reg.predict([[0,1,2,2]])
+reg.predict([[1,1,3,0]])
+reg.predict([[1,1,2,1]])
+reg.predict([[0,2,1,1]])
+reg.predict([[1,1,0,1]])
+reg.predict([[0,1,4,2]])
+reg.predict([[1,1,3,1]])
+reg.predict([[1,3,3,2]])
+reg.predict([[1,1,2,2]])
+reg.predict([[1,2,3,1]])
+reg.predict([[1,1,4,1]])
+reg.predict([[1,0,2,2]])
+reg.predict([[1,1,1,2]])
+reg.predict([[1,3,3,2]])
+reg.predict([[1,0,3,1]])
+reg.predict([[0,0,3,0]])
+reg.predict([[1,5,0,1]])
+reg.predict([[1,1,3,0]])
+reg.predict([[1,2,4,1]])
+reg.predict([[1,5,0,1]])
+reg.predict([[1,1,0,2]])
+reg.predict([[0,2,0,2]])
+reg.predict([[1,3,1,2]])
+reg.predict([[0,1,2,0]])
+reg.predict([[1,0,1,2]])
+reg.predict([[1,0,0,1]])
+reg.predict([[1,0,0,2]])
+reg.predict([[1,1,1,0]])
+reg.predict([[0,3,0,0]])
+reg.predict([[0,1,0,2]])
+reg.predict([[0,1,2,0]])
+reg.predict([[1,2,4,0]])
+reg.predict([[1,1,3,2]])
+reg.predict([[1,2,0,1]])
+reg.predict([[1,1,0,0]])
+reg.predict([[0,2,0,2]])
+reg.predict([[0,1,2,2]])
+reg.predict([[1,7,0,2]])
+reg.predict([[0,0,2,1]])
+reg.predict([[1,0,2,0]])
+reg.predict([[1,1,1,1]])
+reg.predict([[1,0,5,1]])
+reg.predict([[0,0,1,0]])
+reg.predict([[1,1,0,0]])
+reg.predict([[1,2,3,1]])
+reg.predict([[1,20,0,0]])
+reg.predict([[1,3,0,1]])
+reg.predict([[1,4,0,0]])
+reg.predict([[1,3,1,0]])
+reg.predict([[1,0,1,0]])
+reg.predict([[1,1,2,2]])
+reg.predict([[0,1,0,2]])
+reg.predict([[1,6,0,0]])
+reg.predict([[1,1,3,1]])
+reg.predict([[0,0,1,2]])
+reg.predict([[0,0,2,0]])
+reg.predict([[1,2,2,2]])
+reg.predict([[1,0,7,1]])
+reg.predict([[1,0,1,1]])
+reg.predict([[1,1,5,2]])
+reg.predict([[1,2,3,0]])
+reg.predict([[1,0,27,0]])
+reg.predict([[0,1,1,0]])
+reg.predict([[1,2,0,0]])
+reg.predict([[1,5,1,2]])
+reg.predict([[1,5,0,2]])
+reg.predict([[1,3,0,0]])
+reg.predict([[1,1,2,0]])
+reg.predict([[1,4,0,0]])
+reg.predict([[1,1,6,0]])
+reg.predict([[1,1,2,0]])
+reg.predict([[1,2,0,2]])
+reg.predict([[1,0,1,2]])
+reg.predict([[0,2,1,1]])
+reg.predict([[1,2,0,0]])
+reg.predict([[0,0,0,2]])
+reg.predict([[1,5,8,1]])
+reg.predict([[0,1,0,1]])
+reg.predict([[1,4,0,2]])
+reg.predict([[1,2,2,1]])
+reg.predict([[1,2,3,2]])
+reg.predict([[1,1,2,1]])
+reg.predict([[1,6,0,1]])
+reg.predict([[1,2,6,2]])
+reg.predict([[1,15,0,1]])
+reg.predict([[0,0,3,1]])
+reg.predict([[1,3,0,0]])
+reg.predict([[0,0,1,0]])
+reg.predict([[1,0,16,0]])
+reg.predict([[1,3,2,2]])
+reg.predict([[0,0,2,0]])
+reg.predict([[1,4,3,0]])
+reg.predict([[1,7,0,0]])
+reg.predict([[1,8,0,2]])
+reg.predict([[1,1,6,1]])
+reg.predict([[1,1,0,1]])
+reg.predict([[1,2,9,1]])
+reg.predict([[0,1,3,1]])
+reg.predict([[1,3,0,1]])
+reg.predict([[1,13,0,1]])
+reg.predict([[1,15,3,1]])
+reg.predict([[0,0,0,1]])
+reg.predict([[1,25,0,0]])
+reg.predict([[1,32,0,2]])
+reg.predict([[1,0,0,0]])
+reg.predict([[0,2,0,0]])
+reg.predict([[1,3,6,2]])
+reg.predict([[1,0,33,0]])
+reg.predict([[0,1,1,1]])
+reg.predict([[0,1,3,2]])
+reg.predict([[1,1,1,1]])
+reg.predict([[1,1,16,1]])
+reg.predict([[1,2,3,2]])
+reg.predict([[1,8,0,0]])
+reg.predict([[1,3,0,2]])
+reg.predict([[1,4,1,2]])
+reg.predict([[1,1,4,0]])
+reg.predict([[0,1,1,2]])
+reg.predict([[1,5,0,0]])
+reg.predict([[1,2,4,2]])
+reg.predict([[0,1,5,1]])
+reg.predict([[1,2,0,1]])
+reg.predict([[1,0,2,0]])
+reg.predict([[1,2,1,2]])
+reg.predict([[0,1,1,0]])
+reg.predict([[0,2,0,0]])
+reg.predict([[0,1,1,2]])
+reg.predict([[0,3,0,2]])
+reg.predict([[1,0,2,2]])
+reg.predict([[1,6,0,2]])
+reg.predict([[1,7,4,2]])
+#--------------------------------------------------#--------------------------------------------------

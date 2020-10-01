@@ -1,0 +1,155 @@
+#--------------------------------------------------#--------------------------------------------------
+from pyspark.sql.functions import col,sum,avg,max,min,when,trim
+from sklearn.linear_model import LogisticRegression
+from pyspark.sql.functions import lit
+from sklearn import metrics
+
+df1=spark.read.option("header",True).option("inferSchema",True).csv("C:/Users/anjan/Documents/Big data/hackerthon/loan prediction/train_ctrUa4K.csv")
+df2=df1.na.drop().drop("loan_id")
+
+#df2.count()
+#df2.describe().show()
+
+#df2.select("Loan_ID").distinct().show()
+#df2.select("Gender").distinct().show()
+#df2.select("Married").distinct().show()
+#df2.select("Dependents").distinct().show()
+#df2.select("Education").distinct().show()
+#df2.select("Self_Employed").distinct().show()
+#df2.select("ApplicantIncome").distinct().show()
+#df2.select("CoapplicantIncome").distinct().show()
+#df2.select("LoanAmount").distinct().show()
+#df2.select("Loan_Amount_Term").distinct().show()
+#df2.select("Credit_History").distinct().show()
+#df2.select("Property_Area").distinct().show()
+#df2.select("Loan_Status").distinct().show()
+
+df3 = df2 \
+.withColumn("Gender", when(col("Gender")=="Female",0).when(col("Gender")=="Male",1)) \
+.withColumn("Married", when(col("Married")=="No",0).when(col("Married")=="Yes",1)) \
+.withColumn("Dependents", when(col("Dependents")=="0",0).when(col("Dependents")=="1",1).when(col("Dependents")=="2",2).when(col("Dependents")=="3+",3)) \
+.withColumn("Education", when(col("Education")=="Not Graduate",0).when(col("Education")=="Graduate",1)) \
+.withColumn("Self_Employed", when(col("Self_Employed")=="No",0).when(col("Self_Employed")=="Yes",1)) \
+.withColumn("ApplicantIncome", \
+when((col("ApplicantIncome")>=0) & (col("ApplicantIncome")<2500),lit(0)) \
+.when((col("ApplicantIncome")>=2500) & (col("ApplicantIncome")<5000),lit(1)) \
+.when((col("ApplicantIncome")>=5000) & (col("ApplicantIncome")<7500),lit(2)) \
+.when((col("ApplicantIncome")>=7500) & (col("ApplicantIncome")<10000),lit(3)) \
+.when((col("ApplicantIncome")>=10000) & (col("ApplicantIncome")<12500),lit(4)) \
+.when((col("ApplicantIncome")>=12500) & (col("ApplicantIncome")<15000),lit(5)) \
+.when((col("ApplicantIncome")>=15000) & (col("ApplicantIncome")<17500),lit(6)) \
+.when((col("ApplicantIncome")>=17500) & (col("ApplicantIncome")<20000),lit(7)) \
+.when((col("ApplicantIncome")>=20000) & (col("ApplicantIncome")<22500),lit(8)) \
+.when((col("ApplicantIncome")>=22500) & (col("ApplicantIncome")<25000),lit(9)) \
+.when((col("ApplicantIncome")>=25000) & (col("ApplicantIncome")<27500),lit(10)) \
+.when((col("ApplicantIncome")>=27500) & (col("ApplicantIncome")<30000),lit(11)) \
+.when((col("ApplicantIncome")>=30000) & (col("ApplicantIncome")<32500),lit(12)) \
+.when((col("ApplicantIncome")>=32500) & (col("ApplicantIncome")<35000),lit(13)) \
+.when((col("ApplicantIncome")>=35000) & (col("ApplicantIncome")<37500),lit(14)) \
+.when((col("ApplicantIncome")>=37500) & (col("ApplicantIncome")<40000),lit(15)) \
+.when((col("ApplicantIncome")>=40000) & (col("ApplicantIncome")<42500),lit(16)) \
+.when((col("ApplicantIncome")>=42500) & (col("ApplicantIncome")<45000),lit(17)) \
+.when((col("ApplicantIncome")>=45000) & (col("ApplicantIncome")<47500),lit(18)) \
+.when((col("ApplicantIncome")>=47500) & (col("ApplicantIncome")<50000),lit(19)) \
+.when((col("ApplicantIncome")>=50000) & (col("ApplicantIncome")<52500),lit(20)) \
+.when((col("ApplicantIncome")>=52500) & (col("ApplicantIncome")<55000),lit(21)) \
+.when((col("ApplicantIncome")>=55000) & (col("ApplicantIncome")<57500),lit(22)) \
+.when((col("ApplicantIncome")>=57500) & (col("ApplicantIncome")<60000),lit(23)) \
+.when((col("ApplicantIncome")>=60000) & (col("ApplicantIncome")<62500),lit(24)) \
+.when((col("ApplicantIncome")>=62500) & (col("ApplicantIncome")<65000),lit(25)) \
+.when((col("ApplicantIncome")>=65000) & (col("ApplicantIncome")<67500),lit(26)) \
+.when((col("ApplicantIncome")>=67500) & (col("ApplicantIncome")<70000),lit(27)) \
+.when((col("ApplicantIncome")>=70000) & (col("ApplicantIncome")<72500),lit(28)) \
+.when((col("ApplicantIncome")>=72500) & (col("ApplicantIncome")<75000),lit(29)) \
+.when((col("ApplicantIncome")>=75000) & (col("ApplicantIncome")<77500),lit(30)) \
+.when((col("ApplicantIncome")>=77500) & (col("ApplicantIncome")<80000),lit(31)) \
+.when((col("ApplicantIncome")>=80000) & (col("ApplicantIncome")<82500),lit(32))) \
+.withColumn("CoapplicantIncome", \
+when((col("CoapplicantIncome")>=0) & (col("CoapplicantIncome")<1250),lit(0)) \
+.when((col("CoapplicantIncome")>=1250) & (col("CoapplicantIncome")<2500),lit(1)) \
+.when((col("CoapplicantIncome")>=2500) & (col("CoapplicantIncome")<3750),lit(2)) \
+.when((col("CoapplicantIncome")>=3750) & (col("CoapplicantIncome")<5000),lit(3)) \
+.when((col("CoapplicantIncome")>=5000) & (col("CoapplicantIncome")<6250),lit(4)) \
+.when((col("CoapplicantIncome")>=6250) & (col("CoapplicantIncome")<7500),lit(5)) \
+.when((col("CoapplicantIncome")>=7500) & (col("CoapplicantIncome")<8750),lit(6)) \
+.when((col("CoapplicantIncome")>=8750) & (col("CoapplicantIncome")<10000),lit(7)) \
+.when((col("CoapplicantIncome")>=10000) & (col("CoapplicantIncome")<11250),lit(8)) \
+.when((col("CoapplicantIncome")>=11250) & (col("CoapplicantIncome")<12500),lit(9)) \
+.when((col("CoapplicantIncome")>=12500) & (col("CoapplicantIncome")<13750),lit(10)) \
+.when((col("CoapplicantIncome")>=13750) & (col("CoapplicantIncome")<15000),lit(11)) \
+.when((col("CoapplicantIncome")>=15000) & (col("CoapplicantIncome")<16250),lit(12)) \
+.when((col("CoapplicantIncome")>=16250) & (col("CoapplicantIncome")<17500),lit(13)) \
+.when((col("CoapplicantIncome")>=17500) & (col("CoapplicantIncome")<18750),lit(14)) \
+.when((col("CoapplicantIncome")>=18750) & (col("CoapplicantIncome")<20000),lit(15)) \
+.when((col("CoapplicantIncome")>=20000) & (col("CoapplicantIncome")<21250),lit(16)) \
+.when((col("CoapplicantIncome")>=21250) & (col("CoapplicantIncome")<22500),lit(17)) \
+.when((col("CoapplicantIncome")>=22500) & (col("CoapplicantIncome")<23750),lit(18)) \
+.when((col("CoapplicantIncome")>=23750) & (col("CoapplicantIncome")<25000),lit(19)) \
+.when((col("CoapplicantIncome")>=25000) & (col("CoapplicantIncome")<26250),lit(20)) \
+.when((col("CoapplicantIncome")>=26250) & (col("CoapplicantIncome")<27500),lit(21)) \
+.when((col("CoapplicantIncome")>=27500) & (col("CoapplicantIncome")<28750),lit(22)) \
+.when((col("CoapplicantIncome")>=28750) & (col("CoapplicantIncome")<30000),lit(23)) \
+.when((col("CoapplicantIncome")>=30000) & (col("CoapplicantIncome")<31250),lit(24)) \
+.when((col("CoapplicantIncome")>=31250) & (col("CoapplicantIncome")<32500),lit(25)) \
+.when((col("CoapplicantIncome")>=32500) & (col("CoapplicantIncome")<33750),lit(26)) \
+.when((col("CoapplicantIncome")>=33750) & (col("CoapplicantIncome")<35000),lit(27)) \
+.when((col("CoapplicantIncome")>=35000) & (col("CoapplicantIncome")<36250),lit(28)) \
+.when((col("CoapplicantIncome")>=36250) & (col("CoapplicantIncome")<37500),lit(29)) \
+.when((col("CoapplicantIncome")>=37500) & (col("CoapplicantIncome")<38750),lit(30)) \
+.when((col("CoapplicantIncome")>=38750) & (col("CoapplicantIncome")<40000),lit(31)) \
+.when((col("CoapplicantIncome")>=40000) & (col("CoapplicantIncome")<41250),lit(32)) \
+.when((col("CoapplicantIncome")>=41250) & (col("CoapplicantIncome")<42500),lit(33))) \
+.withColumn("LoanAmount", \
+when((col("LoanAmount")>=9) & (col("LoanAmount")<59),lit(0)) \
+.when((col("LoanAmount")>=59) & (col("LoanAmount")<109),lit(1)) \
+.when((col("LoanAmount")>=109) & (col("LoanAmount")<159),lit(2)) \
+.when((col("LoanAmount")>=159) & (col("LoanAmount")<209),lit(3)) \
+.when((col("LoanAmount")>=209) & (col("LoanAmount")<259),lit(4)) \
+.when((col("LoanAmount")>=259) & (col("LoanAmount")<309),lit(5)) \
+.when((col("LoanAmount")>=309) & (col("LoanAmount")<359),lit(6)) \
+.when((col("LoanAmount")>=359) & (col("LoanAmount")<409),lit(7)) \
+.when((col("LoanAmount")>=409) & (col("LoanAmount")<459),lit(8)) \
+.when((col("LoanAmount")>=459) & (col("LoanAmount")<509),lit(9)) \
+.when((col("LoanAmount")>=509) & (col("LoanAmount")<559),lit(10)) \
+.when((col("LoanAmount")>=559) & (col("LoanAmount")<609),lit(11))) \
+.withColumn("Loan_Amount_Term", \
+when(col("Loan_Amount_Term")==36,0) \
+.when(col("Loan_Amount_Term")==60,1) \
+.when(col("Loan_Amount_Term")==84,1) \
+.when(col("Loan_Amount_Term")==120,3) \
+.when(col("Loan_Amount_Term")==180,4) \
+.when(col("Loan_Amount_Term")==240,5) \
+.when(col("Loan_Amount_Term")==300,6) \
+.when(col("Loan_Amount_Term")==360,7) \
+.when(col("Loan_Amount_Term")==480,8)) \
+.withColumn("Credit_History", \
+when(col("Credit_History")==0,0) \
+.when(col("Credit_History")==1,1)) \
+.withColumn("Property_Area", when(col("Property_Area")=="Urban",0).when(col("Property_Area")=="Semiurban",1).when(col("Property_Area")=="Rural",2)) \
+.withColumn("Loan_Status", when(col("Loan_Status")=="Y",0).when(col("Loan_Status")=="N",1))
+#--------------------------------------------------#--------------------------------------------------
+#--------------------------------------------------#--------------------------------------------------
+df_x=df3.select("Gender","Married","Dependents","Education","Self_Employed","ApplicantIncome","CoapplicantIncome","LoanAmount","Loan_Amount_Term","Credit_History","Property_Area").toPandas()
+df_y=df3.select("Loan_Status").toPandas()
+
+#print('Result is =',reg.predict([[1,0]]))
+
+reg = LogisticRegression()
+reg.fit(df_x, df_y)
+
+y_pred = reg.predict(df_x)
+print("Accuracy:",metrics.accuracy_score(df_y, y_pred))
+
+#y_pred = reg.predict(x_test)
+#print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+#--------------------------------------------------#--------------------------------------------------
++-------+--------+------+-------+------------------+------------+-------------+----------------+------------------+------------------+-----------------+------------------+-------------+-----------+
+|summary| Loan_ID|Gender|Married|        Dependents|   Education|Self_Employed| ApplicantIncome| CoapplicantIncome|        LoanAmount| Loan_Amount_Term|    Credit_History|Property_Area|Loan_Status|
++-------+--------+------+-------+------------------+------------+-------------+----------------+------------------+------------------+-----------------+------------------+-------------+-----------+
+|  count|     480|   480|    480|               480|         480|          480|             480|               480|               480|              480|               480|          480|        480|
+|   mean|    null|  null|   null|0.5694760820045558|        null|         null|      5364.23125|1581.0935833096667|144.73541666666668|           342.05|0.8541666666666666|         null|       null|
+| stddev|    null|  null|   null|0.7961536810109932|        null|         null|5668.25125067468|  2617.69226692251| 80.50816421360774|65.21240068043208|0.3533072691637982|         null|       null|
+|    min|LP001003|Female|     No|                 0|    Graduate|           No|             150|               0.0|                 9|               36|                 0|        Rural|          N|
+|    max|LP002990|  Male|    Yes|                3+|Not Graduate|          Yes|           81000|           33837.0|               600|              480|                 1|        Urban|          Y|
++-------+--------+------+-------+------------------+------------+-------------+----------------+------------------+------------------+-----------------+------------------+-------------+-----------+
